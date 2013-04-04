@@ -1,7 +1,7 @@
 /**
  * @fileoverview This is jQuery plugin to change the style of default scroll bar
  * @author chengbapi@gmail.com (Mingyu Cheng)
- * @version 1.0.0
+ * @version 0.1.1
  * */
 
 ;(function() {
