@@ -1,3 +1,7 @@
+/**
+ * To customize your own style of scrollBar
+ * */
+
 .scrollBarWrapper{width: 100%; height: 100%;}
 
 .scrollBar{background:#666;position:absolute;border-radius:5px;opacity:0.5;}
