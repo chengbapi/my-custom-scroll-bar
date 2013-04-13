@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <link media="all" rel="stylesheet" href="customScrollBar.css" type="text/css" />
-    <script src="../../jquery.js" type="text/javascript"></script>
+    <script src="../../jquery/jquery.js" type="text/javascript"></script>
     <script src="customScrollBar.js" type="text/javascript"></script>
     <title></title>
 </head>
@@ -11,7 +11,7 @@
 <div id='a' style="height:610px;width:600px;background:#999;position:absolute;border:1px solid
 black;">
     <div>kk</div>
-    <div>kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk</div>
+    <div id="long">kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk</div>
     <div>kk</div>
     <div>kk</div>
     <div>kk</div>
@@ -49,6 +49,7 @@ black;">
     <div>kk</div>
     <div>kk</div>
     <div>kk</div>
+    <button id="click">click on me</button>
     <div>kk</div>
     <div>kk</div>
     <div>kk</div>
@@ -94,6 +95,13 @@ black;">
 </div>
     <script type="text/javascript">
         $("#a").customScrollBar();
+        $("#click").click(function() {
+            for ( var i = 0; i < 85; i++ ) {
+                $("#long")[0].innerHTML += "k";
+            }
+
+                $("#a").customScrollBarRender();
+        });
     </script>
 </body>
 </html>

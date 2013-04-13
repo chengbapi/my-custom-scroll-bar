@@ -46,6 +46,8 @@
 
                     ele.customScrollBarRender({top : val, y : null});
 
+                    return false;
+
                 })
 
                 // addEventListener click and drag Event on scrollBars
@@ -90,17 +92,23 @@
             
             };
         }(),
-        customScrollBarRender : function(pointTo) {
+        customScrollBarRender : function( pointTo ) {
 
-            var displayWidth = $(this).width(),
-                displayHeight = $(this).height(),
+            var ele = $(this).hasClass("scrollBarWrapper") ? $(this) : $(this).children(".scrollBarWrapper"),
+                displayWidth = ele.width(),
+                displayHeight = ele.height(),
+                
+                prevContent = ele.prevAll().not(".scrollBar"),
+                nextContent = ele.nextAll().not(".scrollBar"),
 
                 contentWidth,
                 contentHeight,
+                contentTop,
+                contentLeft,
                 widthRate,
                 heightRate,
 
-                vScrollBar = $(this).nextAll(".v.scrollBar"),
+                vScrollBar = ele.nextAll(".v.scrollBar"),
                 vScrollBarWidth = vScrollBar.width(),
                 vScrollBarLength = displayHeight,
                 vScrollBarOffset = vScrollBar.offset(),
@@ -111,7 +119,7 @@
                 vScrollButtonLength,
                 vScrollButtonTop,
 
-                hScrollBar = $(this).nextAll(".h.scrollBar"),
+                hScrollBar = ele.nextAll(".h.scrollBar"),
                 hScrollBarWidth = hScrollBar.height(),
                 hScrollBarLength = displayWidth,
                 hScrollBarOffset = hScrollBar.offset(),
@@ -126,16 +134,20 @@
                 toTop,
                 toLeft;
 
+            // put new content into ele if new content has added
+            ele.prepend(prevContent);
+            ele.append(nextContent);
+
             // position vScrollBar in proper position
-            vScrollBar.css({height : vScrollBarLength, right : 0, top : 0})
-            hScrollBar.css({width : hScrollBarLength, left : 0, bottom : 0})
+            vScrollBar.css({ height : vScrollBarLength, right : 0, top : 0})
+            hScrollBar.css({ width : hScrollBarLength, left : 0, bottom : 0})
 
             // calculate contentWidth and contentHeight
-            $(this).css({width : "auto", height : "auto"});
-            contentWidth = $(this).width() + vScrollBarWidth;
-            contentHeight = $(this).height() + hScrollBarWidth;
+            ele.css({width : "auto", height : "auto"});
+            contentWidth = ele.width() + vScrollBarWidth;
+            contentHeight = ele.height() + hScrollBarWidth;
             // back to initial status
-            $(this).css({width : displayWidth, height : displayHeight});
+            ele.css({width : displayWidth, height : displayHeight});
 
             // calculate Rate for buttonSize use
             widthRate = contentWidth / displayWidth;
@@ -149,13 +161,18 @@
                 vScrollButton.height(vScrollButtonLength);
 
                 // calculate toTop value
-                
-                if (pointTo.y !== null) {
-                    vScrollButtonTop = (pointTo.y - vScrollBarOffsetY - 0.5 * vScrollButtonLength);
+                if (!pointTo) {
+                    // content change Event
+                    contentTop = - parseFloat(ele.css("top"));
 
+                    vScrollButtonTop = (contentTop / contentHeight) * vScrollBarLength;
+
+                } else if (pointTo.y !== null) {
+                    // mousemove Event
+                    vScrollButtonTop = (pointTo.y - vScrollBarOffsetY - 0.5 * vScrollButtonLength);
                 } else if(pointTo.top !== undefined){
                     // mousewheel Event
-                    vScrollButtonTop = parseInt(vScrollButton.css("top")) - (pointTo.top / contentHeight) * vScrollButtonLength;
+                    vScrollButtonTop = parseFloat(vScrollButton.css("top")) - (pointTo.top / contentHeight) * vScrollButtonLength;
                 }
 
                 // modify
@@ -163,10 +180,10 @@
                 vScrollButtonTop = vScrollButtonTop < 0 ? 0 : vScrollButtonTop;
                 vScrollButtonTop = vScrollButtonTop > max ? max : vScrollButtonTop;
 
-                toTop = (vScrollButtonTop / (vScrollBarLength - vScrollButtonLength));
+                toTop = vScrollButtonTop / vScrollBarLength;
 
                 // move
-                $(this).css({top : -toTop * (contentHeight - displayHeight)});
+                ele.css({top : -toTop * contentHeight});
                 vScrollButton.css({top : vScrollButtonTop});
 
             }else{
@@ -181,8 +198,12 @@
                 hScrollButton.width(hScrollButtonLength);
 
                 // calculate toTop value
-                
-                if (pointTo.x !== null) {
+                if (!pointTo) {
+                     // content change Event
+                    contentLeft = - parseFloat(ele.css("left"));
+
+                    hScrollButtonLeft = (contentLeft / contentWidth) * hScrollBarLength;
+                } else if (pointTo.x !== null) {
                     hScrollButtonLeft = (pointTo.x - hScrollBarOffsetX - 0.5 * hScrollButtonLength);
                 }
 
@@ -191,10 +212,10 @@
                 hScrollButtonLeft = hScrollButtonLeft < 0 ? 0 : hScrollButtonLeft;
                 hScrollButtonLeft = hScrollButtonLeft > max ? max : hScrollButtonLeft;
 
-                toLeft = (hScrollButtonLeft / (hScrollBarLength - hScrollButtonLength));
+                toLeft = hScrollButtonLeft / hScrollBarLength;
 
                 // move
-                $(this).css({left : -toLeft * (contentWidth - displayWidth)});
+                ele.css({left : -toLeft * contentWidth});
                 hScrollButton.css({left : hScrollButtonLeft});
 
             }else{
