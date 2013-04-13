@@ -8,15 +8,25 @@
     $.fn.extend({
         customScrollBar : function() {
             
-            var template = $(
-            "<div class='v scrollBar'>" + 
-                "<div class='v scrollButton'></div>" + 
-            "</div>" + 
-            "<div class='h scrollBar'>" + 
-                "<div class='h scrollButton'></div>" +
-            "</div>");
+            var 
+                vertical_template = $(
+                "<div class='v scrollBar'>" + 
+                    "<div class='v scrollButton'></div>" + 
+                "</div>"),
 
-            return function() {
+                horizental_template = $(
+                "<div class='h scrollBar'>" + 
+                    "<div class='h scrollButton'></div>" + 
+                "</div>"),
+
+                default_options = {
+                    arrow : false,
+                    vertical : true,
+                    horizental : true
+                };
+
+
+            return function(options) {
 
                 var displayWidth = $(this).width(),
                     displayHeight = $(this).height(),
@@ -24,7 +34,12 @@
 
                     ele,
                     scrollBarWidth,
-                    val;
+                    val,
+
+                    options = $.extend(options, default_options),
+                    arrow = options.arrow,
+                    vertical = options.vertical,
+                    horizental = options.horizental;
 
                 // render CSS style and insert template into target
                 $(this).css({overflow : "hidden"})
@@ -33,10 +48,16 @@
                 ele = $(this).children(".scrollBarWrapper");
                 ele.css({position : 'absolute', width : displayWidth, height : displayHeight});
 
-                ele.after(template);
-                
+                if (vertical) {
+                    ele.after(vertical_template);
+                }
+                if (horizental) {
+                    ele.after(horizental_template);
+                }
+
                 // addEventListener mousewheel Event on ele
-                ele.on("mousewheel DOMMouseScroll", function(e) {
+                ele.add(".v.scrollBar", ele.parent()).on("mousewheel DOMMouseScroll", function(e) {
+
                     e = e.originalEvent;
                     if (e.wheelDelta) {
                         val = e.wheelDelta;
@@ -92,6 +113,7 @@
             
             };
         }(),
+
         customScrollBarRender : function( pointTo ) {
 
             var ele = $(this).hasClass("scrollBarWrapper") ? $(this) : $(this).children(".scrollBarWrapper"),
@@ -138,9 +160,6 @@
             ele.prepend(prevContent);
             ele.append(nextContent);
 
-            // position vScrollBar in proper position
-            vScrollBar.css({ height : vScrollBarLength, right : 0, top : 0})
-            hScrollBar.css({ width : hScrollBarLength, left : 0, bottom : 0})
 
             // calculate contentWidth and contentHeight
             ele.css({width : "auto", height : "auto"});
@@ -152,6 +171,14 @@
             // calculate Rate for buttonSize use
             widthRate = contentWidth / displayWidth;
             heightRate = contentHeight / displayHeight;
+
+            // position vScrollBar in proper position
+            if (heightRate > 1 && widthRate > 1) {
+                vScrollBarLength -= hScrollBarWidth;
+                hScrollBarLength -= vScrollBarWidth; 
+            }
+            vScrollBar.css({ height : vScrollBarLength, right : 0, top : 0})
+            hScrollBar.css({ width : hScrollBarLength, left : 0, bottom : 0})
 
             // handle vertical content overflow
             if (heightRate > 1) {
