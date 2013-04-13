@@ -137,6 +137,12 @@
                 // render for the fisrt time vertically and horizentally
                 ele.customScrollBarRender({y : 0, x : 0});
 
+                ele.on("DOMSubtreeModified", function() {
+                    setTimeout(function() {
+                        ele.customScrollBarRender();
+                    }, 1);
+                });
+
                 return this;
             
             };

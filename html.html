@@ -182,12 +182,13 @@ black;">
 </div>
     <script type="text/javascript">
         $("#a").customScrollBar({arrow : false});
+        var start = new Date();
         $("#click").click(function() {
             for ( var i = 0; i < 85; i++ ) {
                 $("#b")[0].innerHTML += "k";
             }
 
-            $("#a").customScrollBarRender();
+            console.log(new Date() - start);
         });
     </script>
 </body>
