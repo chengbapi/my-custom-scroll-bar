@@ -9,14 +9,26 @@
         customScrollBar : function() {
             
             var 
+                prev_arrow_template = $(
+                "<div class='prev scrollBar_arrow'></div>"
+                ),
+
+                next_arrow_template = $(
+                "<div class='next scrollBar_arrow'></div>"
+                ),
+
                 vertical_template = $(
                 "<div class='v scrollBar'>" + 
-                    "<div class='v scrollButton'></div>" + 
+                    "<div class='v scrollButtonWrapper'>" + 
+                        "<div class='v scrollButton'></div>" + 
+                    "</div>" +
                 "</div>"),
 
                 horizental_template = $(
                 "<div class='h scrollBar'>" + 
-                    "<div class='h scrollButton'></div>" + 
+                    "<div class='h scrollButtonWrapper'>" + 
+                        "<div class='h scrollButton'></div>" + 
+                    "</div>" +
                 "</div>"),
 
                 default_options = {
@@ -28,15 +40,13 @@
 
             return function(options) {
 
-                var displayWidth = $(this).width(),
-                    displayHeight = $(this).height(),
+                var 
                     that = this,
 
                     ele,
-                    scrollBarWidth,
                     val,
 
-                    options = $.extend(options, default_options),
+                    options = $.extend(default_options, options),
                     arrow = options.arrow,
                     vertical = options.vertical,
                     horizental = options.horizental;
@@ -46,13 +56,15 @@
                 $(this).wrapInner("<div class='scrollBarWrapper'></div>");
 
                 ele = $(this).children(".scrollBarWrapper");
-                ele.css({position : 'absolute', width : displayWidth, height : displayHeight});
 
                 if (vertical) {
                     ele.after(vertical_template);
                 }
                 if (horizental) {
                     ele.after(horizental_template);
+                }
+                if (arrow) {
+                    ele.siblings(".scrollBar").prepend(prev_arrow_template).append(next_arrow_template);
                 }
 
                 // addEventListener mousewheel Event on ele
@@ -93,7 +105,7 @@
                         })
                     }
 
-                    if ($target.hasClass("scrollBar")) {
+                    if ($target.hasClass("scrollButtonWrapper")) {
                         $(this).one("mouseup", function(e) {
                             if (isVertical) {
                                 ele.customScrollBarRender({y : e.pageY, x : null});
@@ -102,6 +114,22 @@
                             }
                             $(that).removeClass("user_select_none");
                         })
+                    }
+
+                    if ($target.hasClass("scrollBar_arrow")) {
+                        if ($target.parent().hasClass("v")) {
+                            if ($target.hasClass("prev")) {
+                                ele.customScrollBarRender({top : 240, y : null});
+                            } else {
+                                ele.customScrollBarRender({top : -240, y : null});
+                            }
+                        } else {
+                            if ($target.hasClass("prev")) {
+                                ele.customScrollBarRender({left : 240, x : null});
+                            } else {
+                                ele.customScrollBarRender({left : -240, x : null});
+                            }
+                        }
                     }
                     
                 })
@@ -116,9 +144,11 @@
 
         customScrollBarRender : function( pointTo ) {
 
-            var ele = $(this).hasClass("scrollBarWrapper") ? $(this) : $(this).children(".scrollBarWrapper"),
-                displayWidth = ele.width(),
-                displayHeight = ele.height(),
+            var 
+                ele = $(this).hasClass("scrollBarWrapper") ? $(this) : $(this).children(".scrollBarWrapper"),
+
+                displayWidth = ele.parent().width(),
+                displayHeight = ele.parent().height(),
                 
                 prevContent = ele.prevAll().not(".scrollBar"),
                 nextContent = ele.nextAll().not(".scrollBar"),
@@ -130,27 +160,42 @@
                 widthRate,
                 heightRate,
 
+                // vertical
                 vScrollBar = ele.nextAll(".v.scrollBar"),
+                vScrollBarArrowLength = vScrollBar.children(".scrollBar_arrow").height(),
+
                 vScrollBarWidth = vScrollBar.width(),
                 vScrollBarLength = displayHeight,
+
+                vScrollButtonWrapper = vScrollBar.children(".scrollButtonWrapper"),
+                vScrollButtonWrapperLength,
+
                 vScrollBarOffset = vScrollBar.offset(),
                 vScrollBarOffsetX = vScrollBarOffset.left,
                 vScrollBarOffsetY = vScrollBarOffset.top,
 
-                vScrollButton = vScrollBar.find(".v.scrollButton"),
+                vScrollButton = vScrollBar.find(".scrollButton"),
                 vScrollButtonLength,
                 vScrollButtonTop,
 
+                // horizental
                 hScrollBar = ele.nextAll(".h.scrollBar"),
+                hScrollBarArrowLength = hScrollBar.children(".scrollBar_arrow").width(),
+
                 hScrollBarWidth = hScrollBar.height(),
                 hScrollBarLength = displayWidth,
+
+                hScrollButtonWrapper = hScrollBar.children(".scrollButtonWrapper"),
+                hScrollButtonWrapperLength,
+
                 hScrollBarOffset = hScrollBar.offset(),
                 hScrollBarOffsetX = hScrollBarOffset.left,
                 hScrollBarOffsetY = hScrollBarOffset.top,
 
-                hScrollButton = hScrollBar.find(".h.scrollButton"),
+                hScrollButton = hScrollBar.find(".scrollButton"),
                 hScrollButtonLength,
                 hScrollButtonLeft,
+
 
                 max,
                 toTop,
@@ -160,6 +205,7 @@
             ele.prepend(prevContent);
             ele.append(nextContent);
 
+            ele.css({position : 'absolute', width : displayWidth, height : displayHeight});
 
             // calculate contentWidth and contentHeight
             ele.css({width : "auto", height : "auto"});
@@ -172,19 +218,26 @@
             widthRate = contentWidth / displayWidth;
             heightRate = contentHeight / displayHeight;
 
+
             // position vScrollBar in proper position
             if (heightRate > 1 && widthRate > 1) {
                 vScrollBarLength -= hScrollBarWidth;
-                hScrollBarLength -= vScrollBarWidth; 
+                hScrollBarLength -= vScrollBarWidth;
             }
-            vScrollBar.css({ height : vScrollBarLength, right : 0, top : 0})
-            hScrollBar.css({ width : hScrollBarLength, left : 0, bottom : 0})
+
+            vScrollButtonWrapperLength = vScrollBarLength - 2 * vScrollBarArrowLength;
+            hScrollButtonWrapperLength = hScrollBarLength - 2 * hScrollBarArrowLength; 
+
+            vScrollBar.height(vScrollBarLength);
+            hScrollBar.width(hScrollBarLength);
+            vScrollButtonWrapper.css({height : vScrollButtonWrapperLength, top : vScrollBarArrowLength});
+            hScrollButtonWrapper.css({width : hScrollButtonWrapperLength, left : hScrollBarArrowLength});
 
             // handle vertical content overflow
             if (heightRate > 1) {
                 vScrollBar.show();
 
-                vScrollButtonLength = displayHeight / heightRate;
+                vScrollButtonLength = vScrollButtonWrapperLength / heightRate;
                 vScrollButton.height(vScrollButtonLength);
 
                 // calculate toTop value
@@ -196,18 +249,18 @@
 
                 } else if (pointTo.y !== null) {
                     // mousemove Event
-                    vScrollButtonTop = (pointTo.y - vScrollBarOffsetY - 0.5 * vScrollButtonLength);
-                } else if(pointTo.top !== undefined){
+                    vScrollButtonTop = (pointTo.y - vScrollBarOffsetY - 0.5 * vScrollButtonLength - vScrollBarArrowLength);
+                } else if(pointTo.top !== undefined) {
                     // mousewheel Event
                     vScrollButtonTop = parseFloat(vScrollButton.css("top")) - (pointTo.top / contentHeight) * vScrollButtonLength;
                 }
 
                 // modify
-                max = vScrollBarLength - vScrollButtonLength;
+                max = vScrollButtonWrapperLength - vScrollButtonLength;
                 vScrollButtonTop = vScrollButtonTop < 0 ? 0 : vScrollButtonTop;
                 vScrollButtonTop = vScrollButtonTop > max ? max : vScrollButtonTop;
 
-                toTop = vScrollButtonTop / vScrollBarLength;
+                toTop = vScrollButtonTop / vScrollButtonWrapperLength;
 
                 // move
                 ele.css({top : -toTop * contentHeight});
@@ -221,7 +274,7 @@
             if (widthRate > 1) {
                 hScrollBar.show();
                 
-                hScrollButtonLength = displayWidth / widthRate;
+                hScrollButtonLength = hScrollButtonWrapperLength / widthRate;
                 hScrollButton.width(hScrollButtonLength);
 
                 // calculate toTop value
@@ -232,14 +285,16 @@
                     hScrollButtonLeft = (contentLeft / contentWidth) * hScrollBarLength;
                 } else if (pointTo.x !== null) {
                     hScrollButtonLeft = (pointTo.x - hScrollBarOffsetX - 0.5 * hScrollButtonLength);
+                } else if (pointTo.left !== undefined) {
+                    hScrollButtonLeft = parseFloat(hScrollButton.css("left")) - (pointTo.left / contentWidth) * hScrollButtonLength;
                 }
 
                 // modify 
-                max = hScrollBarLength - hScrollButtonLength;
+                max = hScrollButtonWrapperLength - hScrollButtonLength;
                 hScrollButtonLeft = hScrollButtonLeft < 0 ? 0 : hScrollButtonLeft;
                 hScrollButtonLeft = hScrollButtonLeft > max ? max : hScrollButtonLeft;
 
-                toLeft = hScrollButtonLeft / hScrollBarLength;
+                toLeft = hScrollButtonLeft / hScrollButtonWrapperLength;
 
                 // move
                 ele.css({left : -toLeft * contentWidth});
