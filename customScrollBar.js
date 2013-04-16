@@ -86,28 +86,38 @@
                 // addEventListener click and drag Event on scrollBars
                 ele.nextAll('.scrollBar').on("mousedown", function(e) {
                     var $target = $(e.target),
-                        timer,
+                        lastTime = new Date(),
+                        thisTime,
                         isVertical = $target.hasClass('v');
                     
                     $(that).addClass("user_select_none");
 
                     if ($target.hasClass("scrollButton")) {
+
+                        function render (e) {
+                            if (isVertical) {
+                                ele.customScrollBarRender({y : e.pageY, x : null});
+                            } else {
+                                ele.customScrollBarRender({y : null, x : e.pageX});
+                            }
+                        }
                         
                         $(document).on("mousemove", function(e) {
                             // reduce render
-                            timer =  setTimeout(func, 100);
-                           
-                            function func() {
-                                if (isVertical) {
-                                    ele.customScrollBarRender({y : e.pageY, x : null});
-                                } else {
-                                    ele.customScrollBarRender({y : null, x : e.pageX});
-                                }
+                            thisTime = new Date();
+                                
+                            if (thisTime - lastTime > 50) {
+                                render(e);
+                                lastTime = thisTime;
                             }
+                           
                         })
 
                         $(document).one("mouseup", function(e) {
-                            timer = null;
+                            render(e);
+
+                            lastTime = null;
+                            thisTime = null;
 
                             $(document).off("mousemove");
                             $(that).removeClass("user_select_none");
