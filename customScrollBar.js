@@ -1,10 +1,10 @@
 /**
  * @fileoverview This is jQuery plugin to change the style of default scroll bar
  * @author chengbapi@gmail.com (Mingyu Cheng)
- * @version 0.1.1
+ * @version 0.1.2
  * */
 
-;(function() {
+;(function($) {
     $.fn.extend({
         customScrollBar : function() {
             
@@ -86,20 +86,29 @@
                 // addEventListener click and drag Event on scrollBars
                 ele.nextAll('.scrollBar').on("mousedown", function(e) {
                     var $target = $(e.target),
+                        timer,
                         isVertical = $target.hasClass('v');
                     
                     $(that).addClass("user_select_none");
 
                     if ($target.hasClass("scrollButton")) {
+                        
                         $(document).on("mousemove", function(e) {
-                            if (isVertical) {
-                                ele.customScrollBarRender({y : e.pageY, x : null});
-                            } else {
-                                ele.customScrollBarRender({y : null, x : e.pageX});
+                            // reduce render
+                            timer =  setTimeout(func, 100);
+                           
+                            function func() {
+                                if (isVertical) {
+                                    ele.customScrollBarRender({y : e.pageY, x : null});
+                                } else {
+                                    ele.customScrollBarRender({y : null, x : e.pageX});
+                                }
                             }
                         })
 
                         $(document).one("mouseup", function(e) {
+                            timer = null;
+
                             $(document).off("mousemove");
                             $(that).removeClass("user_select_none");
                         })
@@ -152,9 +161,13 @@
 
             var 
                 ele = $(this).hasClass("scrollBarWrapper") ? $(this) : $(this).children(".scrollBarWrapper"),
+                
+                /* add support to body element */
+                target = ele.parent(),
+                target = target[0].tagName.toLowerCase() === 'body' ? window : target[0], 
 
-                displayWidth = ele.parent().width(),
-                displayHeight = ele.parent().height(),
+                displayWidth = $(target).width(),
+                displayHeight = $(target).height(),
                 
                 prevContent = ele.prevAll().not(".scrollBar"),
                 nextContent = ele.nextAll().not(".scrollBar"),
@@ -205,7 +218,11 @@
 
                 max,
                 toTop,
-                toLeft;
+                toLeft,
+
+                // set scroll Event a proper speed
+                speed = 15;
+                
 
             // put new content into ele if new content has added
             ele.prepend(prevContent);
@@ -258,6 +275,7 @@
                     vScrollButtonTop = (pointTo.y - vScrollBarOffsetY - 0.5 * vScrollButtonLength - vScrollBarArrowLength);
                 } else if(pointTo.top !== undefined) {
                     // mousewheel Event
+                    pointTo.top *= speed;
                     vScrollButtonTop = parseFloat(vScrollButton.css("top")) - (pointTo.top / contentHeight) * vScrollButtonLength;
                 }
 
@@ -292,6 +310,7 @@
                 } else if (pointTo.x !== null) {
                     hScrollButtonLeft = (pointTo.x - hScrollBarOffsetX - 0.5 * hScrollButtonLength);
                 } else if (pointTo.left !== undefined) {
+                    pointTo.left *= speed;
                     hScrollButtonLeft = parseFloat(hScrollButton.css("left")) - (pointTo.left / contentWidth) * hScrollButtonLength;
                 }
 
