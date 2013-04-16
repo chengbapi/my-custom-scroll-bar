@@ -1,7 +1,7 @@
 /**
  * @fileoverview This is jQuery plugin to change the style of default scroll bar
  * @author chengbapi@gmail.com (Mingyu Cheng)
- * @version 0.1.2
+ * @version 0.1.3
  * */
 
 ;(function($) {
@@ -146,12 +146,16 @@
                 // render for the fisrt time vertically and horizentally
                 ele.customScrollBarRender({y : 0, x : 0});
 
+                // work in Chrom
+                // but endless loop in FF 
+                // it see render as a modification
+                /*
                 ele.on("DOMSubtreeModified", function() {
                     setTimeout(function() {
                         ele.customScrollBarRender();
                     }, 1);
                 });
-
+                */
                 return this;
             
             };
@@ -165,6 +169,7 @@
                 /* add support to body element */
                 target = ele.parent(),
                 target = target[0].tagName.toLowerCase() === 'body' ? window : target[0], 
+
 
                 displayWidth = $(target).width(),
                 displayHeight = $(target).height(),

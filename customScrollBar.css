@@ -24,3 +24,9 @@
 
 .user_select_none{-moz-user-select:none;-webkit-user-select: none;}
 
+@media only screen and (max-width :768px) {
+    .scrollBar {
+        display: none;
+    }
+}
+
