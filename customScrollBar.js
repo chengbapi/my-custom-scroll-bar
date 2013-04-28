@@ -1,7 +1,7 @@
 /**
  * @fileoverview This is jQuery plugin to change the style of default scroll bar
  * @author chengbapi@gmail.com (Mingyu Cheng)
- * @version 0.1.3
+ * @version 0.1.5
  * */
 
 ;(function($) {
@@ -9,27 +9,23 @@
         customScrollBar : function() {
             
             var 
-                prev_arrow_template = $(
-                "<div class='prev scrollBar_arrow'></div>"
-                ),
+                prev_arrow_template = "<div class='prev scrollBar_arrow'></div>",
 
-                next_arrow_template = $(
-                "<div class='next scrollBar_arrow'></div>"
-                ),
+                next_arrow_template = "<div class='next scrollBar_arrow'></div>",
 
-                vertical_template = $(
+                vertical_template = 
                 "<div class='v scrollBar'>" + 
                     "<div class='v scrollButtonWrapper'>" + 
                         "<div class='v scrollButton'></div>" + 
                     "</div>" +
-                "</div>"),
+                "</div>",
 
-                horizental_template = $(
+                horizental_template = 
                 "<div class='h scrollBar'>" + 
                     "<div class='h scrollButtonWrapper'>" + 
                         "<div class='h scrollButton'></div>" + 
                     "</div>" +
-                "</div>"),
+                "</div>",
 
                 default_options = {
                     arrow : false,
@@ -52,19 +48,23 @@
                     horizental = options.horizental;
 
                 // render CSS style and insert template into target
-                $(this).css({overflow : "hidden"})
+                $(this).css({overflow: "hidden"});
+                if ($(this).css('position') === 'static') {
+                    $(this).css({position: 'relative'});
+                }
+
                 $(this).wrapInner("<div class='scrollBarWrapper'></div>");
 
                 ele = $(this).children(".scrollBarWrapper");
 
                 if (vertical) {
-                    ele.after(vertical_template);
+                    ele.after($(vertical_template));
                 }
                 if (horizental) {
-                    ele.after(horizental_template);
+                    ele.after($(horizental_template));
                 }
                 if (arrow) {
-                    ele.siblings(".scrollBar").prepend(prev_arrow_template).append(next_arrow_template);
+                    ele.siblings(".scrollBar").prepend($(prev_arrow_template)).append($(next_arrow_template));
                 }
 
                 // addEventListener mousewheel Event on ele
@@ -94,6 +94,7 @@
 
                     if ($target.hasClass("scrollButton")) {
 
+                        // nomalize event object
                         function render (e) {
                             if (isVertical) {
                                 ele.customScrollBarRender({y : e.pageY, x : null});
@@ -177,13 +178,14 @@
                 ele = $(this).hasClass("scrollBarWrapper") ? $(this) : $(this).children(".scrollBarWrapper"),
                 
                 /* add support to body element */
-                target = ele.parent(),
-                target = target[0].tagName.toLowerCase() === 'body' ? window : target[0], 
+                $target = ele.parent(),
+                target = $target[0].tagName.toLowerCase() === 'body' ? window : $target[0], 
 
 
                 displayWidth = $(target).width(),
                 displayHeight = $(target).height(),
                 
+                /* deal with adding content directly to parent element */
                 prevContent = ele.prevAll().not(".scrollBar"),
                 nextContent = ele.nextAll().not(".scrollBar"),
 
@@ -236,10 +238,13 @@
                 toLeft,
 
                 // set scroll Event a proper speed
-                speed = 15;
+                speed = 15,
+
+                // parent's scrollbar'
+                parentScrollBar;
                 
 
-            // put new content into ele if new content has added
+            // move new content to ele if new content has added
             ele.prepend(prevContent);
             ele.append(nextContent);
 
@@ -296,8 +301,24 @@
 
                 // modify
                 max = vScrollButtonWrapperLength - vScrollButtonLength;
-                vScrollButtonTop = vScrollButtonTop < 0 ? 0 : vScrollButtonTop;
-                vScrollButtonTop = vScrollButtonTop > max ? max : vScrollButtonTop;
+
+                parentScrollBar = $target.parent().siblings(".v.scrollBar");
+                
+                if (vScrollButtonTop < 0) {
+                    vScrollButtonTop = 0;
+                    if (parentScrollBar.length) {
+                        // trigger father's scrollbar event
+                        $target.parent().customScrollBarRender({top : pointTo.top / speed, y : null});
+                    }
+                }
+
+                if (vScrollButtonTop > max) {
+                    vScrollButtonTop = max;
+                    if (parentScrollBar.length) {
+                        // trigger father's scrollbar event
+                        $target.parent().customScrollBarRender({top : pointTo.top / speed, y : null});
+                    }
+                }
 
                 toTop = vScrollButtonTop / vScrollButtonWrapperLength;
 
